@@ -1,0 +1,73 @@
+server:
+  port: 9202
+eureka:
+  instance:
+    # 该配置指示eureka客户端需要向eureka服务器发送心跳的频率  (Spring Cloud默认该配置是 30s)
+    leaseRenewalIntervalInSeconds: 10
+    # 该配置指示eureka服务器在接收到最后一个心跳之后等待的时间，然后才能从列表中删除此实例 (Spring Cloud默认该配置是 90s)
+    lease-expiration-duration-in-seconds: 30
+    # monitor
+    health-check-url-path: /actuator/health
+    prefer-ip-address: true
+  client:
+    registryFetchIntervalSeconds: 5
+    service-url:
+      # 这里配置一个defaultZone 用来替换默认的配置 http://localhost:8761/eureka
+      defaultZone: http://anytxnv2:9101/eureka
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+
+    health:
+      show-details: ALWAYS
+    prometheus:
+      enabled: true
+
+spring:
+  application:
+    name: gateway
+  profiles:
+    active: default
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: false  #注册中心服务默认路由配置
+          lower-case-service-id: true
+    refresh:
+      refreshable: none #解决Hikari循环注入
+
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://10.0.11.25:3306/anytxnv2_gateway_admin_uat?characterEncoding=utf8
+    username: anycfs
+    password: anycfs123
+
+
+filter:
+  setting:
+    #是否开启鉴权 0不开启   -1开启
+    authModel: 0
+    #综管地址前缀
+    authAddress: http://127.0.0.1:9201
+    #服务首页地址（登陆成功后回调）
+    indexUrl: http://127.0.0.1:9202/
+#    #服务前缀
+#    servicePre: ${server.context-path}
+    #服务key(综管获取)
+    serviceId: gateway
+    #本地ip:port（真实ip,综管中心要重定向回来）
+    localUrl: 127.0.0.1:9202
+    #是否集成综管jar包
+    hadAuth: true
+    #忽略鉴权地址
+    allows:
+      - /login
+      - /actuator/**
+      - /route/**
+      - /rule/**
